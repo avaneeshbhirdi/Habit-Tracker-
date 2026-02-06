@@ -1,5 +1,9 @@
 {
   "appId": "com.example.myapplication",
   "appName": "My Application",
-  "webDir": "dist"
+  "webDir": "dist",
+  "server": {
+    "url": "http://10.61.41.227:5173",
+    "cleartext": true
+  }
 }
