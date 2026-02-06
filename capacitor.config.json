@@ -1,5 +1,5 @@
 {
-  "appId": "com.habit.tracker",
-  "appName": "HabitTracker",
+  "appId": "com.example.myapplication",
+  "appName": "My Application",
   "webDir": "dist"
 }
