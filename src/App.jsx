@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { format } from 'date-fns';
-import { Settings, Plus, LayoutGrid, BarChart2, Compass, User } from 'lucide-react';
+import { Settings, Plus, LayoutGrid, BarChart2, Compass, User, Activity } from 'lucide-react';
 import CalendarStrip from './components/CalendarStrip';
 import HabitCard from './components/HabitCard';
 import AddHabit from './components/AddHabit';
 import Progress from './components/Progress';
+import Profile from './components/Profile';
 import { useHabits } from './context/HabitContext';
 
 // Helper to determine time of day from string "HH:mm"
@@ -34,7 +35,7 @@ export default function App() {
 
   return (
     <>
-      <div className="screen">
+      <div className="screen" style={{ padding: activeTab === 'profile' ? 0 : '1.25rem' }}>
         {activeTab === 'home' && (
           <>
             {/* Header */}
@@ -59,7 +60,7 @@ export default function App() {
               onSelectDate={setSelectedDate}
             />
 
-            {/* Hero / Insights (Dynamic based on progress?) */}
+            {/* Hero / Insights */}
             <div
               className="glass-panel animate-slide-up"
               style={{
@@ -74,8 +75,8 @@ export default function App() {
               }}
             >
               {/* Decorative Elements */}
-              <div style={{ position: 'absolute', width: '100px', height: '100px', background: '#0a84ff', filter: 'blur(60px)', borderRadius: '50%', top: '20%', left: '10%', opacity: 0.4 }}></div>
-              <div style={{ position: 'absolute', width: '80px', height: '80px', background: '#ff9f0a', filter: 'blur(50px)', borderRadius: '50%', bottom: '10%', right: '20%', opacity: 0.3 }}></div>
+              <div style={{ position: 'absolute', width: '100px', height: '100px', background: 'var(--accent-blue)', filter: 'blur(60px)', borderRadius: '50%', top: '20%', left: '10%', opacity: 0.4 }}></div>
+              <div style={{ position: 'absolute', width: '80px', height: '80px', background: 'var(--accent-cyan)', filter: 'blur(50px)', borderRadius: '50%', bottom: '10%', right: '20%', opacity: 0.3 }}></div>
 
               <div style={{ zIndex: 1, textAlign: 'center' }}>
                 <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Daily Progress</p>
@@ -100,7 +101,7 @@ export default function App() {
             </div>
 
             {/* List */}
-            <div style={{ paddingBottom: '4rem' }}>
+            <div style={{ paddingBottom: '6rem' }}>
               {filteredHabits.map(h => (
                 <HabitCard
                   key={h.id}
@@ -115,10 +116,31 @@ export default function App() {
                 </div>
               )}
             </div>
+
+            {/* FAB for Home */}
+            <div style={{ position: 'fixed', bottom: '100px', right: '20px', zIndex: 50 }}>
+              <div className="fab" onClick={() => setShowAddModal(true)}>
+                <Plus size={28} />
+              </div>
+            </div>
           </>
         )}
 
-        {activeTab === 'progress' && <Progress habits={habits} logs={logs} />}
+        {/* Other Tabs */}
+        {activeTab === 'workout' && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-secondary)' }}>
+            <div className="glass-panel" style={{ padding: '2rem', textAlign: 'center' }}>
+              <BarChart2 size={48} style={{ marginBottom: '1rem', opacity: 0.5 }} />
+              <h3>Workouts</h3>
+              <p>Coming Soon</p>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'history' && <Progress habits={habits} logs={logs} />}
+
+        {activeTab === 'profile' && <Profile />}
+
         {showAddModal && <AddHabit onAdd={(data) => { addHabit(data); setShowAddModal(false); }} onCancel={() => setShowAddModal(false)} />}
       </div>
 
@@ -126,29 +148,24 @@ export default function App() {
       {!showAddModal && (
         <div className="bottom-nav">
           <div className={`nav-icon ${activeTab === 'home' ? 'active' : ''}`} onClick={() => setActiveTab('home')}>
-            <LayoutGrid size={24} strokeWidth={2.5} />
-            <span style={{ fontSize: '10px', display: 'block', textAlign: 'center', marginTop: '4px' }}>Today</span>
+            <LayoutGrid size={24} strokeWidth={2} />
+            <span style={{ fontSize: '10px', display: 'block', textAlign: 'center', marginTop: '4px' }}>LOBBY</span>
           </div>
 
-          <div className="nav-icon" style={{ opacity: 0.5 }}>
-            <Compass size={24} strokeWidth={2.5} />
-            <span style={{ fontSize: '10px', display: 'block', textAlign: 'center', marginTop: '4px' }}>Explore</span>
+          <div className={`nav-icon ${activeTab === 'workout' ? 'active' : ''}`} onClick={() => setActiveTab('workout')}>
+            {/* Using BarChart or similar as dumbell placeholder if needed, User specified Workout */}
+            <Activity size={24} strokeWidth={2} />
+            <span style={{ fontSize: '10px', display: 'block', textAlign: 'center', marginTop: '4px' }}>WORKOUT</span>
           </div>
 
-          <div className="fab-container" onClick={() => setShowAddModal(true)}>
-            <div className="fab">
-              <Plus size={28} />
-            </div>
+          <div className={`nav-icon ${activeTab === 'history' ? 'active' : ''}`} onClick={() => setActiveTab('history')}>
+            <Compass size={24} strokeWidth={2} />
+            <span style={{ fontSize: '10px', display: 'block', textAlign: 'center', marginTop: '4px' }}>HISTORY</span>
           </div>
 
-          <div className={`nav-icon ${activeTab === 'progress' ? 'active' : ''}`} onClick={() => setActiveTab('progress')}>
-            <BarChart2 size={24} strokeWidth={2.5} />
-            <span style={{ fontSize: '10px', display: 'block', textAlign: 'center', marginTop: '4px' }}>Stats</span>
-          </div>
-
-          <div className="nav-icon" style={{ opacity: 0.5 }}>
-            <User size={24} strokeWidth={2.5} />
-            <span style={{ fontSize: '10px', display: 'block', textAlign: 'center', marginTop: '4px' }}>Profile</span>
+          <div className={`nav-icon ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
+            <User size={24} strokeWidth={2} />
+            <span style={{ fontSize: '10px', display: 'block', textAlign: 'center', marginTop: '4px' }}>PROFILE</span>
           </div>
         </div>
       )}

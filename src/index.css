@@ -1,26 +1,41 @@
 :root {
-  /* Core Colors - Deep Dark Theme */
-  --bg-primary: #000000;
-  --bg-secondary: #1c1c1e;
+  /* Core Colors - Future Tech Theme */
+  --bg-primary: #050505;
+  --bg-secondary: #0f1014;
+  --bg-tertiary: #1a1b20;
+
   --text-primary: #ffffff;
-  --text-secondary: #8e8e93;
-  --accent-blue: #0a84ff;
-  --accent-orange: #ff9f0a;
-  --accent-red: #ff453a;
-  --accent-cyan: #64d2ff;
-  --accent-purple: #bf5af2;
+  --text-secondary: #8b9bb4;
+  --text-muted: #566981;
 
-  /* Glass Effect Variables */
-  --glass-bg: rgba(30, 30, 30, 0.6);
+  --accent-cyan: #00f0ff;
+  --accent-blue: #007aff;
+  --accent-purple: #bd00ff;
+  --accent-green: #00ff94;
+
+  --glass-bg: rgba(20, 25, 30, 0.7);
   --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-blur: 20px;
+  --glass-highlight: rgba(255, 255, 255, 0.15);
 
-  /* Gradient Backgrounds */
-  --gradient-bg: radial-gradient(circle at 0% 0%, #2c3e50 0%, #000000 50%);
+  --nav-height: 80px;
+  --font-tech: 'Orbitron', 'Inter', sans-serif;
+  /* Fallback to Inter if Orbitron not loaded */
+}
 
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, sans-serif;
-  --nav-height: 84px;
-  /* Taller for the bottom curve */
+/* Cyberpunk Grid Background */
+.bg-grid {
+  background-size: 40px 40px;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  pointer-events: none;
 }
 
 * {
@@ -33,16 +48,11 @@
 body {
   margin: 0;
   font-family: var(--font-sans);
-  background: #0f0f11;
-  background-image:
-    radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.15) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(168, 85, 247, 0.15) 0px, transparent 50%);
-  background-attachment: fixed;
+  background: var(--bg-primary);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
   overflow: hidden;
-  /* Prevent body scroll, handle in #root */
 }
 
 input,
