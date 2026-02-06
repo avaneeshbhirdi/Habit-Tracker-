@@ -8,7 +8,17 @@ export const useHabits = () => useContext(HabitContext);
 export const HabitProvider = ({ children }) => {
     const [habits, setHabits] = useState(() => {
         const saved = localStorage.getItem('habits');
-        return saved ? JSON.parse(saved) : [];
+        let parsed = saved ? JSON.parse(saved) : [];
+        // Migration for legacy data
+        if (Array.isArray(parsed)) {
+            parsed = parsed.map(h => ({
+                ...h,
+                type: h.type || 'boolean',
+                schedule: h.schedule || { time: '09:00' },
+                goal: h.goal || { target: 1, unit: 'times' }
+            }));
+        }
+        return parsed;
     });
 
     const [logs, setLogs] = useState(() => {

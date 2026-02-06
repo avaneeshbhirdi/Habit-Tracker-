@@ -1,56 +1,36 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { Settings, Plus, LayoutGrid, BarChart2, Compass, User } from 'lucide-react';
 import CalendarStrip from './components/CalendarStrip';
 import HabitCard from './components/HabitCard';
 import AddHabit from './components/AddHabit';
 import Progress from './components/Progress';
+import { useHabits } from './context/HabitContext';
+
+// Helper to determine time of day from string "HH:mm"
+const getTimePeriod = (timeStr) => {
+  if (!timeStr) return 'any';
+  const hour = parseInt(timeStr.split(':')[0], 10);
+  if (hour < 12) return 'morning';
+  if (hour < 17) return 'afternoon';
+  return 'evening';
+};
 
 export default function App() {
-  const [habits, setHabits] = useState(() => {
-    const saved = localStorage.getItem('habits');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const { habits, logs, addHabit, logHabit, getHabitLog } = useHabits();
 
   const [activeTab, setActiveTab] = useState('home');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showAddModal, setShowAddModal] = useState(false);
-
-  useEffect(() => {
-    localStorage.setItem('habits', JSON.stringify(habits));
-  }, [habits]);
-
-  const addHabit = (name) => {
-    const newHabit = {
-      id: Date.now().toString(),
-      name,
-      frequency: 'daily',
-      completedDates: [],
-      createdAt: new Date().toISOString()
-    };
-    setHabits([...habits, newHabit]);
-    setShowAddModal(false);
-  };
-
-  const toggleHabit = (id, dateStr) => {
-    // dateStr passed might need formatting if it comes from CalendarStrip directly
-    // Ideally we standardize on yyyy-MM-dd
-    setHabits(habits.map(h => {
-      if (h.id === id) {
-        const exists = h.completedDates.includes(dateStr);
-        let newDates;
-        if (exists) {
-          newDates = h.completedDates.filter(d => d !== dateStr);
-        } else {
-          newDates = [...h.completedDates, dateStr].sort();
-        }
-        return { ...h, completedDates: newDates };
-      }
-      return h;
-    }));
-  };
+  const [filter, setFilter] = useState('all'); // all, morning, afternoon, evening
 
   const dateKey = format(selectedDate, 'yyyy-MM-dd');
+
+  // Filter Logic
+  const filteredHabits = habits.filter(h => {
+    if (filter === 'all') return true;
+    return getTimePeriod(h.schedule?.time) === filter;
+  });
 
   return (
     <>
@@ -79,7 +59,7 @@ export default function App() {
               onSelectDate={setSelectedDate}
             />
 
-            {/* Hero / Illustration Area (Abstract Gradient for now) */}
+            {/* Hero / Insights (Dynamic based on progress?) */}
             <div
               className="glass-panel animate-slide-up"
               style={{
@@ -97,27 +77,36 @@ export default function App() {
               <div style={{ position: 'absolute', width: '100px', height: '100px', background: '#0a84ff', filter: 'blur(60px)', borderRadius: '50%', top: '20%', left: '10%', opacity: 0.4 }}></div>
               <div style={{ position: 'absolute', width: '80px', height: '80px', background: '#ff9f0a', filter: 'blur(50px)', borderRadius: '50%', bottom: '10%', right: '20%', opacity: 0.3 }}></div>
 
-              <p style={{ zIndex: 1, fontSize: '14px', color: 'var(--text-secondary)', textAlign: 'center' }}>
-                "We are what we repeatedly do.<br />Excellence, then, is not an act, but a habit."
-              </p>
+              <div style={{ zIndex: 1, textAlign: 'center' }}>
+                <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Daily Progress</p>
+                <h2 style={{ fontSize: '32px', margin: '4px 0' }}>
+                  {Math.round((habits.filter(h => getHabitLog(h.id, dateKey)?.completed).length / (habits.length || 1)) * 100)}%
+                </h2>
+              </div>
             </div>
 
             {/* Filters */}
             <div className="filter-bar animate-slide-up" style={{ animationDelay: '0.2s' }}>
-              <div className="filter-pill">Evening</div>
-              <div className="filter-pill active">All Day</div>
-              <div className="filter-pill">Morning</div>
-              <div className="filter-pill">Afternoon</div>
+              {['all', 'morning', 'afternoon', 'evening'].map(f => (
+                <div
+                  key={f}
+                  className={`filter-pill ${filter === f ? 'active' : ''}`}
+                  onClick={() => setFilter(f)}
+                  style={{ textTransform: 'capitalize' }}
+                >
+                  {f}
+                </div>
+              ))}
             </div>
 
             {/* List */}
             <div style={{ paddingBottom: '4rem' }}>
-              {habits.map(h => (
+              {filteredHabits.map(h => (
                 <HabitCard
                   key={h.id}
                   habit={h}
-                  date={dateKey}
-                  onToggle={toggleHabit}
+                  log={getHabitLog(h.id, dateKey)}
+                  onLog={(id, val) => logHabit(id, dateKey, val)}
                 />
               ))}
               {habits.length === 0 && (
@@ -129,8 +118,8 @@ export default function App() {
           </>
         )}
 
-        {activeTab === 'progress' && <Progress habits={habits} />}
-        {showAddModal && <AddHabit onAdd={addHabit} onCancel={() => setShowAddModal(false)} />}
+        {activeTab === 'progress' && <Progress habits={habits} logs={logs} />}
+        {showAddModal && <AddHabit onAdd={(data) => { addHabit(data); setShowAddModal(false); }} onCancel={() => setShowAddModal(false)} />}
       </div>
 
       {/* Bottom Navigation */}

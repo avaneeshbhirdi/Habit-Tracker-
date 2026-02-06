@@ -2,7 +2,13 @@ import React from 'react';
 import { format, subDays, addDays, parseISO, isSameDay } from 'date-fns';
 import { Flame, Trophy, Calendar } from 'lucide-react';
 
-export default function Progress({ habits }) {
+export default function Progress({ habits, logs }) {
+    const getCompletedDates = (habitId) => {
+        return Object.keys(logs || {})
+            .filter(key => key.startsWith(habitId + '_') && logs[key]?.completed)
+            .map(key => key.split('_')[1]);
+    };
+
     const getLongestStreak = (completedDates) => {
         if (!completedDates || completedDates.length === 0) return 0;
         const sorted = [...completedDates].sort();
@@ -29,21 +35,20 @@ export default function Progress({ habits }) {
         return Math.max(maxStreak, currentStreak);
     };
 
-    const getCurrentStreak = (habit) => {
+    const getCurrentStreak = (completedDates) => {
         const d = new Date();
         let streak = 0;
 
-        // Check if streak is active (today or yesterday completed)
         const todayStr = format(d, 'yyyy-MM-dd');
         const yestStr = format(subDays(d, 1), 'yyyy-MM-dd');
 
         let pointer = d;
-        if (!habit.completedDates.includes(todayStr)) {
-            if (!habit.completedDates.includes(yestStr)) return 0;
+        if (!completedDates.includes(todayStr)) {
+            if (!completedDates.includes(yestStr)) return 0;
             pointer = subDays(d, 1);
         }
 
-        while (habit.completedDates.includes(format(pointer, 'yyyy-MM-dd'))) {
+        while (completedDates.includes(format(pointer, 'yyyy-MM-dd'))) {
             streak++;
             pointer = subDays(pointer, 1);
         }
@@ -65,9 +70,10 @@ export default function Progress({ habits }) {
             ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     {habits.map(h => {
-                        const current = getCurrentStreak(h);
-                        const longest = getLongestStreak(h.completedDates);
-                        const total = h.completedDates.length;
+                        const completedDates = getCompletedDates(h.id);
+                        const current = getCurrentStreak(completedDates);
+                        const longest = getLongestStreak(completedDates);
+                        const total = completedDates.length;
 
                         return (
                             <div key={h.id} className="glass-panel" style={{ padding: '1.25rem' }}>
